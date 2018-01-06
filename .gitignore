@@ -1,0 +1,8 @@
+.git
+.vs
+.vscode
+wwwroot
+bin
+obj
+*.user
+node_modules

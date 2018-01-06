@@ -1,0 +1,80 @@
+$main-width: 800px;
+
+bt-stats {
+  display: grid;
+  
+
+  grid-template-areas: 
+    ".  title    title    ."
+    ".  calendar calendar ."
+    ".  username username ."
+    ".  stats    stats    .";
+
+  grid-template-rows: auto auto auto auto;
+  grid-template-columns: 1fr $main-width/2 $main-width/2 1fr;
+
+  justify-items: center;
+
+  .center-flex {
+    display: flex;
+    justify-content: center;
+  }
+
+  .title {
+    grid-area: title;
+  }
+  .calendar {
+    grid-area: calendar;
+  }
+  .username {
+    grid-area: username;
+    justify-self: left;
+
+    padding-top: 15px;
+  }
+  .stats {
+    width: 100%;
+    grid-area: stats;
+    justify-self: left;
+
+    padding-top: 15px;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    .stat-item {
+      flex: 1 0 50%;
+      box-sizing: border-box;
+    }
+  }
+
+  
+
+  heatmap-month {
+    width: 200px;
+    height: 200px;
+  }
+
+  .carousel {
+    width: $main-width;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+  }
+  .carousel-inner {
+    width: 80%;
+  }
+  .carousel-indicators {
+    visibility: hidden;
+  }
+  .carousel-control {
+    width: 10%;
+  }
+
+  // .popover {
+  //   position: fixed;
+  //   z-index: 999;
+  // }
+
+
+}
