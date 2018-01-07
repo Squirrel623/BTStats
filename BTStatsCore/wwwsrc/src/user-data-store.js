@@ -79,12 +79,20 @@ function UserDataStore($http) {
     });
   }
 
+  function getFirstLogin(username) {
+    return getSimpleValue({
+      username: username,
+      endpoint: 'firstLogin'
+    });
+  }
+
   return {
     getLoginCount,
     getLoggedInTime,
     getLoginTimePerDay,
     getTotalMessages,
     getMostUsedEmotes,
+    getFirstLogin,
   }
 }
 

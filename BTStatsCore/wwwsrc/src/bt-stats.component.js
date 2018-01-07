@@ -16,6 +16,7 @@ function StatsCtrl(userDataStoreService, $http, $scope){
     $ctrl.typeaheadValue = $ctrl.username = '';
     $ctrl.loginCount = $ctrl.loginTimeTotal = $ctrl.messagesTotal = 0;
     $ctrl.mostUsedEmotes = [];
+    $ctrl.firstLogin = "";
 
     $ctrl.monthYearGroups = chunk(flatMap(range(2014, 2018), year => map(range(1, 13), month => {
       return {
@@ -71,11 +72,12 @@ function StatsCtrl(userDataStoreService, $http, $scope){
         () => $ctrl.loginCount = 0);
     var prom3 = userDataStoreService.getTotalMessages($ctrl.username)
       .then(messageCount => $ctrl.messagesTotal = messageCount, () => $ctrl.messagesTotal = 0);
-
     var prom4 = userDataStoreService.getMostUsedEmotes($ctrl.username)
       .then(emotes => $ctrl.mostUsedEmotes = map(emotes, (value, key) => { return {name: key, times: value} }), $ctrl.mostUsedEmotes = []);
+    var prom5 = userDataStoreService.getFirstLogin($ctrl.username)
+      .then(date => $ctrl.firstLogin = date, () => $ctrl.firstLogin = "");
 
-    Promise.all([prom1, prom2, prom3, prom4]).catch().then(() => $scope.$applyAsync());
+    Promise.all([prom1, prom2, prom3, prom4, prom5]).catch().then(() => $scope.$applyAsync());
   }
 }
 

@@ -25,6 +25,7 @@ namespace BTStatsCorePopulator
         private LoginTimeAccumulator loginTimeMetric;
         private TotalMessages messageCountMetric;
         private UserEmotes emoteCountMetric;
+        private FirstLogin firstLoginMetric;
 
         private List<LoginTimePerDay> dailyLoginTimeMetrics;
         private List<IMetric> metrics;
@@ -43,6 +44,7 @@ namespace BTStatsCorePopulator
             loginTimeMetric = new LoginTimeAccumulator();
             messageCountMetric = new TotalMessages();
             emoteCountMetric = new UserEmotes();
+            firstLoginMetric = new FirstLogin();
 
             TzdbDateTimeZoneSource tzSource = TzdbDateTimeZoneSource.Default;
             dailyLoginTimeMetrics = new List<LoginTimePerDay>()
@@ -56,7 +58,6 @@ namespace BTStatsCorePopulator
                 new LoginTimePerDay(timezone: tzSource.ForId("Europe/Athens")),
                 new LoginTimePerDay(timezone: tzSource.ForId("Asia/Hong_Kong")),
                 new LoginTimePerDay(timezone: tzSource.ForId("Asia/Tokyo")),
-                //new LoginTimePerDay(timezone: tzSource.ForId("Etc/GMT+10")),
             };
 
             metrics = new List<IMetric>()
@@ -65,7 +66,8 @@ namespace BTStatsCorePopulator
                 loginCountMetric,
                 loginTimeMetric,
                 messageCountMetric,
-                emoteCountMetric
+                emoteCountMetric,
+                firstLoginMetric
             };
             metrics.AddRange(dailyLoginTimeMetrics);
 
@@ -172,6 +174,17 @@ namespace BTStatsCorePopulator
             }
 
             return userEmotes[username][emote].Effects;
+        }
+
+        public async Task<LocalDate> GetFirstLogin(string username)
+        {
+            await InitializeTask;
+            if(!firstLoginMetric.FirstLoginDict.ContainsKey(username))
+            {
+                return LocalDate.MinIsoValue;
+            }
+
+            return firstLoginMetric.FirstLoginDict[username];
         }
 
         #endregion

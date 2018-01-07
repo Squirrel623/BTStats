@@ -139,5 +139,12 @@ namespace BTStatsCore.Controllers
                 .OrderBy(kvp => kvp.Key)
                 .Select(kvp => new UserLoginTimePerDay(kvp.Key, kvp.Value));
         }
+
+        [HttpGet("/firstLogin/{user}")]
+        public async Task<string> GetFirstLoginDate(string user)
+        {
+            var date = await statsProvider.GetFirstLogin(user);
+            return $"{date.Year}-{date.Month.ToString("D2")}-{date.Day.ToString("D2")}";
+        }
     }
 }
