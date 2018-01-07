@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
+using NodaTime;
+using NodaTime.TimeZones;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -42,15 +44,19 @@ namespace BTStatsCorePopulator
             messageCountMetric = new TotalMessages();
             emoteCountMetric = new UserEmotes();
 
+            TzdbDateTimeZoneSource tzSource = TzdbDateTimeZoneSource.Default;
             dailyLoginTimeMetrics = new List<LoginTimePerDay>()
             {
-                new LoginTimePerDay(offset: new TimeSpan(-8, 0, 0)),
-                new LoginTimePerDay(offset: new TimeSpan(-6, 0, 0)),
-                new LoginTimePerDay(offset: new TimeSpan(-4, 0, 0)),
-                new LoginTimePerDay(offset: TimeSpan.Zero),
-                new LoginTimePerDay(offset: new TimeSpan(2, 0, 0)),
-                new LoginTimePerDay(offset: new TimeSpan(8, 0, 0)),
-                new LoginTimePerDay(offset: new TimeSpan(10, 0, 0))
+                new LoginTimePerDay(timezone: tzSource.ForId("US/Pacific")),
+                new LoginTimePerDay(timezone: tzSource.ForId("US/Mountain")),
+                new LoginTimePerDay(timezone: tzSource.ForId("US/Central")),
+                new LoginTimePerDay(timezone: tzSource.ForId("US/Eastern")),
+                new LoginTimePerDay(timezone: tzSource.ForId("Europe/London")),
+                new LoginTimePerDay(timezone: tzSource.ForId("Europe/Berlin")),
+                new LoginTimePerDay(timezone: tzSource.ForId("Europe/Athens")),
+                new LoginTimePerDay(timezone: tzSource.ForId("Asia/Hong_Kong")),
+                new LoginTimePerDay(timezone: tzSource.ForId("Asia/Tokyo")),
+                //new LoginTimePerDay(timezone: tzSource.ForId("Etc/GMT+10")),
             };
 
             metrics = new List<IMetric>()
@@ -103,23 +109,24 @@ namespace BTStatsCorePopulator
             return userLoginCount[user];
         }
 
-        public async Task<TimeSpan> GetUserLoggedInTime(string user)
+        public async Task<Duration> GetUserLoggedInTime(string user)
         {
             await InitializeTask;
             var userLoggedInTime = loginTimeMetric.UserTimeSpans;
 
             if (!userLoggedInTime.ContainsKey(user))
             {
-                return TimeSpan.Zero;
+                return Duration.Zero;
             }
 
             return userLoggedInTime[user];
         }
 
-        public async Task<IDictionary<DateTimeOffset, TimeSpan>> GetUserLoggedInTimePerDay(TimeSpan offset, string user)
+        public async Task<IDictionary<LocalDate, Duration>> GetUserLoggedInTimePerDay(string timezoneId, string user)
         {
             await InitializeTask;
-            var dict = dailyLoginTimeMetrics.Find(loginTimePerDayMetric => loginTimePerDayMetric.Offset == offset)?.UserDailyLoginTimeDictionary;
+
+            var dict = dailyLoginTimeMetrics.Find(loginTimePerDayMetric => loginTimePerDayMetric.TimeZone.Id == timezoneId)?.UserDailyLoginTimeDictionary;
             if (dict == null)
             {
                 return null;
@@ -130,7 +137,7 @@ namespace BTStatsCorePopulator
                 return null;
             }
 
-            return new Dictionary<DateTimeOffset, TimeSpan>(dict[user]);
+            return new Dictionary<LocalDate, Duration>(dict[user]);
         }
 
         public async Task<int> GetTotalMessages(string user)

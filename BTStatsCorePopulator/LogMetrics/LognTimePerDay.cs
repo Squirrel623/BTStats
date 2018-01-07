@@ -1,25 +1,27 @@
 ﻿using System;
+using NodaTime;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BTStatsCorePopulator
 {
     public class LoginTimePerDay : BaseLoggedInMetric, IMetric
     {
-        public TimeSpan Offset { get; private set; }
+        public DateTimeZone TimeZone { get; private set; }
 
-        private Dictionary<string, DateTimeOffset> lastLogin = new Dictionary<string, DateTimeOffset>();
+        private Dictionary<string, ZonedDateTime> lastLogin = new Dictionary<string, ZonedDateTime>();
 
-        public IDictionary<string, IDictionary<DateTimeOffset, TimeSpan>> UserDailyLoginTimeDictionary = new Dictionary<string, IDictionary<DateTimeOffset, TimeSpan>>();
+        public IDictionary<string, IDictionary<LocalDate, Duration>> UserDailyLoginTimeDictionary = new Dictionary<string, IDictionary<LocalDate, Duration>>();
 
-        public LoginTimePerDay(TimeSpan offset)
+        public LoginTimePerDay(DateTimeZone timezone)
         {
-            this.Offset = offset;
+            this.TimeZone = timezone;
 
             foreach (string user in Users.InitialLoggedInUsers)
             {
-                lastLogin[user] = new DateTimeOffset(2014, 1, 10, 0, 0, 0, offset);
-                UserDailyLoginTimeDictionary[user] = new Dictionary<DateTimeOffset, TimeSpan>();
+                lastLogin[user] = new ZonedDateTime(Users.FirstLoginInstant, timezone);
+                UserDailyLoginTimeDictionary[user] = new Dictionary<LocalDate, Duration>();
             }
         }
 
@@ -32,7 +34,7 @@ namespace BTStatsCorePopulator
                 return;
             }
 
-            var messageInOffset = userMessage.ToOffset(this.Offset);
+            var messageInOffset = userMessage.ToZone(this.TimeZone);
 
             if (messageInOffset.Type == UserTimestampMessage.MessageType.Join)
             {
@@ -54,11 +56,11 @@ namespace BTStatsCorePopulator
 
             if (!UserDailyLoginTimeDictionary.ContainsKey(message.Username))
             {
-                UserDailyLoginTimeDictionary[message.Username] = new Dictionary<DateTimeOffset, TimeSpan>();
+                UserDailyLoginTimeDictionary[message.Username] = new Dictionary<LocalDate, Duration>();
             }
 
             loggedInUsers.Add(message.Username);
-            lastLogin[message.Username] = message.Timestamp;
+            lastLogin[message.Username] = message.ZonedTimestamp.Value;
         }
 
         private TimeSpan NiceTimespan(TimeSpan span)
@@ -66,30 +68,49 @@ namespace BTStatsCorePopulator
             return new TimeSpan(span.Days, span.Hours, span.Minutes, span.Seconds);
         }
 
-        public IEnumerable<Tuple<DateTimeOffset, TimeSpan>> GetTimespanForEachDate(DateTimeOffset first, DateTimeOffset last)
+        public IEnumerable<Tuple<LocalDate, Duration>> GetDurationForEachDate(ZonedDateTime first, ZonedDateTime last)
         {
-            var returnList = new List<Tuple<DateTimeOffset, TimeSpan>>();
-            var firstKey = new DateTimeOffset(first.Year, first.Month, first.Day, 0, 0, 0, this.Offset);
-            var lastKey = new DateTimeOffset(last.Year, last.Month, last.Day, 0, 0, 0, this.Offset);
+            var returnList = new List<Tuple<LocalDate, Duration>>();
+            var firstKey =  new LocalDate(first.Year, first.Month, first.Day);
+            var lastKey = new LocalDate(last.Year, last.Month, last.Day);
 
-            DateTimeOffset endOfFirst = new DateTimeOffset(first.Year, first.Month, first.Day, 23, 59, 59, 999, this.Offset);
-            DateTimeOffset beginningOfLast = new DateTimeOffset(last.Year, last.Month, last.Day, 0, 0, 0, this.Offset);
+            var localFirst = first.LocalDateTime;
+            var localLast = last.LocalDateTime;
 
-            returnList.Add(new Tuple<DateTimeOffset, TimeSpan>(firstKey, NiceTimespan(endOfFirst.Subtract(first))));
+            //ZonedDateTime endOfFirst = first.Zone.AtStrictly(new LocalDateTime(first.Year, first.Month, first.Day, 23, 59, 59));
+            //ZonedDateTime beginningOfLast = last.Zone.AtStrictly(new LocalDateTime(last.Year, last.Month, last.Day, 0, 0, 0));
+            LocalDateTime endOfFirst = new LocalDateTime(first.Year, first.Month, first.Day, 23, 59, 59);
+            LocalDateTime beginningOfLast = new LocalDateTime(last.Year, last.Month, last.Day, 0, 0, 0);
 
-            var dateIterator = endOfFirst.AddMilliseconds(1);
+            //returnList.Add(new Tuple<LocalDate, Duration>(firstKey, endOfFirst.Minus(first)));
+            returnList.Add(new Tuple<LocalDate, Duration>(firstKey, endOfFirst.Minus(localFirst).ToDuration()));
+
+            var dateIterator = endOfFirst.PlusSeconds(1);
+
+            HashSet<LocalDate> datesSeen = new HashSet<LocalDate>();
+            datesSeen.Add(firstKey);
+
             while(dateIterator < beginningOfLast)
             {
-                returnList.Add(new Tuple<DateTimeOffset, TimeSpan>(dateIterator, new TimeSpan(1, 0, 0, 0)));
-                dateIterator = dateIterator.AddDays(1);
+                var date = new LocalDate(dateIterator.Year, dateIterator.Month, dateIterator.Day);
+
+                if (datesSeen.Contains(date))
+                {
+                    var i = 10;
+                }
+
+                datesSeen.Add(date);
+
+                returnList.Add(new Tuple<LocalDate, Duration>(date, Duration.FromDays(1)));
+                dateIterator = dateIterator.PlusHours(24);
             }
 
-            returnList.Add(new Tuple<DateTimeOffset, TimeSpan>(lastKey, NiceTimespan(last.Subtract(beginningOfLast))));
+            returnList.Add(new Tuple<LocalDate, Duration>(lastKey, localLast.Minus(beginningOfLast).ToDuration()));
 
             return returnList;
         }
 
-        private TimeSpan AssignAndReturnSpanForDate(string username, DateTimeOffset date)
+        private Duration AssignAndReturnDurationForDate(string username, LocalDate date)
         {
             var userDictionary = UserDailyLoginTimeDictionary[username];
 
@@ -98,10 +119,10 @@ namespace BTStatsCorePopulator
                 return userDictionary[date];
             }
 
-            var ts = new TimeSpan();
-            userDictionary[date] = ts;
+            var duration = new Duration();
+            userDictionary[date] = duration;
 
-            return ts;
+            return duration;
         }
 
         private void UserLeave(UserTimestampMessage message)
@@ -116,24 +137,53 @@ namespace BTStatsCorePopulator
 
             var userDictionary = UserDailyLoginTimeDictionary[message.Username];
             var loginDateTime = lastLogin[message.Username];
-            var logoutDateTime = message.Timestamp;
+            var logoutDateTime = message.ZonedTimestamp.Value;
+
+            var loginDate = new LocalDate(loginDateTime.Year, loginDateTime.Month, loginDateTime.Day);
+            var logoutDate = new LocalDate(logoutDateTime.Year, logoutDateTime.Month, logoutDateTime.Day);
 
             //Case 1: User logged in and out on the same day
-            if (loginDateTime.Day == logoutDateTime.Day)
+
+            if (loginDate == logoutDate)
             {
-                var date = new DateTimeOffset(logoutDateTime.Year, logoutDateTime.Month, logoutDateTime.Day, 0, 0, 0, this.Offset);
+                var date = new LocalDate(logoutDateTime.Year, logoutDateTime.Month, logoutDateTime.Day);
 
-                var timespan = AssignAndReturnSpanForDate(message.Username, date);
+                var duration = AssignAndReturnDurationForDate(message.Username, date);
 
-                userDictionary[date] = timespan.Add(logoutDateTime.Subtract(loginDateTime));
+                if (duration > Duration.FromDays(1))
+                {
+                    var i = 11;
+                }
+
+                var delta = logoutDateTime.Minus(loginDateTime);
+                if (delta.TotalTicks < 0)
+                {
+                    var g = 19;
+                }
+
+                var newDuration = duration.Plus(delta);
+
+                if (newDuration > Duration.FromDays(1))
+                {
+                    var u = 39;
+                }
+
+
+                userDictionary[date] = newDuration;
                 return;
             }
 
             //Case 2: User logged in on one date and out on another
-            foreach(var dateTimespanTuple in GetTimespanForEachDate(loginDateTime, logoutDateTime))
+            var dates = GetDurationForEachDate(loginDateTime, logoutDateTime).ToList();
+            foreach (var dateTimespanTuple in dates)
             {
-                var currentTimespan = AssignAndReturnSpanForDate(message.Username, dateTimespanTuple.Item1);
-                userDictionary[dateTimespanTuple.Item1] = currentTimespan.Add(dateTimespanTuple.Item2);
+                var currentTimespan = AssignAndReturnDurationForDate(message.Username, dateTimespanTuple.Item1);
+                userDictionary[dateTimespanTuple.Item1] = currentTimespan.Plus(dateTimespanTuple.Item2);
+
+                if (userDictionary[dateTimespanTuple.Item1] > Duration.FromDays(1))
+                {
+                    var g = 10;
+                }
             }
         }
 

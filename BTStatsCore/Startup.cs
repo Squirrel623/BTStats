@@ -15,6 +15,8 @@ using BTStatsCorePopulator;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Hosting;
 
+using NodaTime.TimeZones;
+
 namespace BTStatsCore
 {
     public class Startup
@@ -29,7 +31,13 @@ namespace BTStatsCore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var ids = TzdbDateTimeZoneSource.Default.GetIds().ToArray();
+
             StatsProvider provider = new StatsProvider();
+            provider.InitializeTask.ContinueWith((task) =>
+            {
+                Console.WriteLine("Stats Compiled");
+            });
 
             services.AddSingleton<StatsProvider>(provider);
             services.AddSingleton<IHostedService>(provider);

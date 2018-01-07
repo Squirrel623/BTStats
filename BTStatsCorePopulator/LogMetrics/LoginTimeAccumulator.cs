@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NodaTime;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,16 +7,18 @@ namespace BTStatsCorePopulator
 {
     public class LoginTimeAccumulator : BaseLoggedInMetric, IMetric
     {
-        public IDictionary<string, TimeSpan> UserTimeSpans { get; } = new Dictionary<string, TimeSpan>();
+        public IDictionary<string, Duration> UserTimeSpans { get; } = new Dictionary<string, Duration>();
 
-        private Dictionary<string, DateTime> lastLogin = new Dictionary<string, DateTime>();
+        private Dictionary<string, OffsetDateTime> lastLogin = new Dictionary<string, OffsetDateTime>();
 
         public LoginTimeAccumulator()
         {
+            var localStartDate = new LocalDateTime(2014, 1, 10, 22, 0, 0);
             foreach(string user in Users.InitialLoggedInUsers)
             {
-                lastLogin[user] = new DateTime(2014, 1, 10, 22, 0, 0);
-                UserTimeSpans[user] = new TimeSpan();
+
+                lastLogin[user] = new OffsetDateTime(localStartDate, Offset.Zero);
+                UserTimeSpans[user] = Duration.Zero;
             }
         }
 
@@ -49,11 +52,11 @@ namespace BTStatsCorePopulator
 
             if (!UserTimeSpans.ContainsKey(message.Username))
             {
-                UserTimeSpans[message.Username] = new TimeSpan();
+                UserTimeSpans[message.Username] = Duration.Zero;
             }
 
             loggedInUsers.Add(message.Username);
-            lastLogin[message.Username] = message.Timestamp.DateTime;
+            lastLogin[message.Username] = message.Timestamp;
         }
 
         private void UserLeave(UserTimestampMessage message)
@@ -67,17 +70,17 @@ namespace BTStatsCorePopulator
             loggedInUsers.Remove(message.Username);
 
             var loginDateTime = lastLogin[message.Username];
-            var logoutDateTime = message.Timestamp.DateTime;
-            var currentTimespan = UserTimeSpans[message.Username];
+            var logoutDateTime = message.Timestamp;
+            var currentDuration = UserTimeSpans[message.Username];
 
-            var newSpan = currentTimespan.Add(logoutDateTime.Subtract(loginDateTime));
+            var newDuration = currentDuration.Plus(logoutDateTime.Minus(loginDateTime));
 
-            if (newSpan.Ticks < currentTimespan.Ticks)
+            if (newDuration.TotalTicks < currentDuration.TotalTicks)
             {
                 return;
             }
 
-            UserTimeSpans[message.Username] = newSpan;
+            UserTimeSpans[message.Username] = newDuration;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using NodaTime;
 
 namespace BTStatsCorePopulator
 {
@@ -30,23 +31,15 @@ namespace BTStatsCorePopulator
     public class FileReader : IDisposable
     {
         private StreamReader fileStreamReader;
-        //string[] fileLines;
-        private DateTimeOffset baseDate;
+        private LocalDate baseDate;
         private IEnumerable<IMetric> metrics;
 
         public FileReader(string filePath, IEnumerable<IMetric> metrics)
         {
-            //if (fileLines == null || fileLines.Length < 1)
-            //{
-            //    throw new Exception();
-            //}
-            //this.fileLines = fileLines;
-
             fileStreamReader = new StreamReader(filePath);
             this.metrics = metrics;
 
             string firstLine = fileStreamReader.ReadLine();
-            //string firstLine = fileLines[0];
             if (!LogRegex.LogOpened.IsMatch(firstLine))
             {
                 throw new Exception("Unexpected first line");
@@ -69,22 +62,11 @@ namespace BTStatsCorePopulator
             month = DateConvertUtil.MonthStringToInt(match.Groups[2].Value);
 
 
-            baseDate = new DateTimeOffset(year, month, day, 0, 0, 0, TimeSpan.Zero);
+            baseDate = new LocalDate(year, month, day);
         }
 
         public void ReadLines()
         {
-            //for(int i = 1; i < this.fileLines.Length; i++)
-            //{
-            //    string line = this.fileLines[i];
-            //    TimestampMessage message = TimestampMessage.Create(baseDate, line);
-            //    if (message == null)
-            //    {
-            //        continue;
-            //    }
-
-            //    metric.HandleLogMessage(message);
-            //}
             string line;
             while ((line = fileStreamReader.ReadLine()) != null)
             {

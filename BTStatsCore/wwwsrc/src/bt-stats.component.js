@@ -4,7 +4,7 @@ import './bt-stats.scss';
 import {map, flatMap, range, chunk, isString, includes} from 'lodash-es';
 import {init, getLoginCount} from './user-data-store';
 
-function StatsCtrl(userDataStoreService, $http){
+function StatsCtrl(userDataStoreService, $http, $scope){
   const $ctrl = this;
 
   $ctrl.usernames = [];
@@ -64,20 +64,22 @@ function StatsCtrl(userDataStoreService, $http){
   }
 
   $ctrl.updateUsernameData = function() {
-    userDataStoreService.getLoginCount($ctrl.username)
+    var prom1 = userDataStoreService.getLoginCount($ctrl.username)
       .then(count => $ctrl.loginCount = count, () => $ctrl.loginCount = 0);
-    userDataStoreService.getLoggedInTime($ctrl.username)
+    var prom2 = userDataStoreService.getLoggedInTime($ctrl.username)
       .then(seconds => $ctrl.loginTimeTotal = (seconds / 60 / 60 / 24).toFixed(1),
         () => $ctrl.loginCount = 0);
-    userDataStoreService.getTotalMessages($ctrl.username)
+    var prom3 = userDataStoreService.getTotalMessages($ctrl.username)
       .then(messageCount => $ctrl.messagesTotal = messageCount, () => $ctrl.messagesTotal = 0);
 
-    userDataStoreService.getMostUsedEmotes($ctrl.username)
+    var prom4 = userDataStoreService.getMostUsedEmotes($ctrl.username)
       .then(emotes => $ctrl.mostUsedEmotes = map(emotes, (value, key) => { return {name: key, times: value} }), $ctrl.mostUsedEmotes = []);
+
+    Promise.all([prom1, prom2, prom3, prom4]).catch().then(() => $scope.$applyAsync());
   }
 }
 
-StatsCtrl.$inject = ['userDataStoreService', '$http'];
+StatsCtrl.$inject = ['userDataStoreService', '$http', '$scope'];
 
 export default {
   template: tpl,

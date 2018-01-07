@@ -1,4 +1,5 @@
 ﻿using System;
+using NodaTime;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,10 +15,10 @@ namespace BTStatsCore.Controllers
         public string Date { get; }
         public ulong Milliseconds { get; }
 
-        public UserLoginTimePerDay(DateTimeOffset offset, TimeSpan span)
+        public UserLoginTimePerDay(LocalDate offset, Duration duration)
         {
             Date = $"{offset.Year}-{offset.Month.ToString("D2")}-{offset.Day.ToString("D2")}";
-            Milliseconds = (uint)span.TotalMilliseconds;
+            Milliseconds = (uint)duration.TotalMilliseconds;
         }
     }
 
@@ -87,7 +88,7 @@ namespace BTStatsCore.Controllers
         [HttpGet("/loggedInTime/{user}")]
         public async Task<double> GetLoggedInTime(string user)
         {
-            TimeSpan loggedInTime = await statsProvider.GetUserLoggedInTime(user);
+            Duration loggedInTime = await statsProvider.GetUserLoggedInTime(user);
             return loggedInTime.TotalSeconds;
         }
 
@@ -109,21 +110,30 @@ namespace BTStatsCore.Controllers
             return await statsProvider.GetEffectsForEmote(user, emote);
         }
 
+        private static Dictionary<int, string> offsetToTzMap = new Dictionary<int, string>()
+        {
+            {-4, "US/Eastern"},
+            {-5, "US/Central"},
+            {-6, "US/Mountain"},
+            {-7, "US/Pacific"},
+            {0, "Europe/London"},
+            {1, "Europe/Berlin"},
+            {2, "Europe/Athens"},
+            {8, "Asia/Hong_Kong"},
+            {9, "Asia/Tokyo"},
+            //{10, "Etc/GMT+10"}
+        };
+
         // GET api/values/loggedInTimePerDay/user
         [HttpGet("/loggedInTimePerDay/{offset}/{user}")]
         public async Task<IEnumerable<UserLoginTimePerDay>> GetLoggedInTimePerDay(int offset, string user)
         {
-            TimeSpan tsOffset;
-            try
-            {
-                tsOffset = new TimeSpan(offset, 0, 0);
-            }
-            catch
+            if (!offsetToTzMap.ContainsKey(offset))
             {
                 return Enumerable.Empty<UserLoginTimePerDay>();
             }
 
-            var dict = await statsProvider.GetUserLoggedInTimePerDay(tsOffset, user) ?? new Dictionary<DateTimeOffset, TimeSpan>();
+            var dict = await statsProvider.GetUserLoggedInTimePerDay(offsetToTzMap[offset], user) ?? new Dictionary<LocalDate, Duration>();
 
             return dict
                 .OrderBy(kvp => kvp.Key)

@@ -1,4 +1,5 @@
 ﻿using System;
+using NodaTime;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -7,7 +8,7 @@ namespace BTStatsCorePopulator
 {
     public class TimestampMessage
     {
-        public static TimestampMessage Create(DateTimeOffset baseDate, string rawMessage)
+        public static TimestampMessage Create(LocalDate baseDate, string rawMessage)
         {
             if (!LogRegex.TimestampMessage.IsMatch(rawMessage))
             {
@@ -24,11 +25,13 @@ namespace BTStatsCorePopulator
             return new TimestampMessage(baseDate, rawMessage);
         }
 
-        public DateTimeOffset Timestamp { get; protected set; }
+        public OffsetDateTime Timestamp { get; protected set; }
+
+        public ZonedDateTime? ZonedTimestamp { get; protected set; }
 
         public string RawContent { get; protected set; }
 
-        public TimestampMessage(DateTimeOffset baseDate, string rawMessage)
+        public TimestampMessage(LocalDate baseDate, string rawMessage)
         {
             var match = LogRegex.TimestampMessage.Match(rawMessage);
 
@@ -53,23 +56,25 @@ namespace BTStatsCorePopulator
 
             int hours = offset / 100;
             int minutes = offset % 100;
-            TimeSpan tsOffset = new TimeSpan(hours, minutes, 0);
+            Offset tsOffset = Offset.FromHoursAndMinutes(hours, minutes);
 
-            Timestamp = new DateTimeOffset(baseDate.Year, baseDate.Month, baseDate.Day, hour, minute, second, tsOffset);
+            var localDateTime = new LocalDateTime(baseDate.Year, baseDate.Month, baseDate.Day, hour, minute, second);
+            Timestamp = new OffsetDateTime(localDateTime, tsOffset);
             RawContent = match.Groups[5].Value.Trim();
         }
 
         public TimestampMessage(TimestampMessage message)
         {
             this.Timestamp = message.Timestamp;
-            this.RawContent = RawContent;
+            this.RawContent = message.RawContent;
+            this.ZonedTimestamp = message.ZonedTimestamp;
         }
 
-        public TimestampMessage ToOffset(TimeSpan offset)
+        public TimestampMessage ToZone(DateTimeZone zone)
         {
             return new TimestampMessage(this)
             {
-                Timestamp = this.Timestamp.ToOffset(offset)
+                ZonedTimestamp = new ZonedDateTime(this.Timestamp.ToInstant(), zone)
             };
         }
     }
@@ -87,7 +92,7 @@ namespace BTStatsCorePopulator
 
         public MessageType Type { get; private set; }
 
-        public UserTimestampMessage(DateTimeOffset baseDate, string rawMessage) : base(baseDate, rawMessage)
+        public UserTimestampMessage(LocalDate baseDate, string rawMessage) : base(baseDate, rawMessage)
         {
             if (LogRegex.UserMessage.IsMatch(rawMessage))
             {
@@ -113,11 +118,11 @@ namespace BTStatsCorePopulator
             this.Type = message.Type;
         }
 
-        public new UserTimestampMessage ToOffset(TimeSpan offset)
+        public new UserTimestampMessage ToZone(DateTimeZone zone)
         {
             return new UserTimestampMessage(this)
             {
-                Timestamp = this.Timestamp.ToOffset(offset)
+                ZonedTimestamp = new ZonedDateTime(this.Timestamp.ToInstant(), zone)
             };
         }
 

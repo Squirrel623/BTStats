@@ -15,7 +15,7 @@ namespace BTStatsCorePopulator
 
             LoginCounter metric1 = new LoginCounter();
             //LoginTimeAccumulator metric2 = new LoginTimeAccumulator(offset: TimeSpan.Zero);
-            LoginTimePerDay metric3 = new LoginTimePerDay(offset: new TimeSpan(-4, 0, 0));
+            //LoginTimePerDay metric3 = new LoginTimePerDay(offset: new TimeSpan(-4, 0, 0));
 
             //var metrics = new IMetric[] { metric1, metric2, metric3 };
 
