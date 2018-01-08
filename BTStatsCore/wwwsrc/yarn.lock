@@ -60,14 +60,6 @@ angular-animate@1.5.11:
   version "1.5.11"
   resolved "https://registry.yarnpkg.com/angular-animate/-/angular-animate-1.5.11.tgz#1baa43c303d1b93c4e6aa89453b39114b7a1c669"
 
-angular-calendar-heatmap@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/angular-calendar-heatmap/-/angular-calendar-heatmap-0.3.1.tgz#488462b5aa5e5febfe7320478f70a453af0adc91"
-  dependencies:
-    angular "^1.4.8"
-    d3 "^3.5.16"
-    moment "^2.13.0"
-
 angular-touch@1.5.11:
   version "1.5.11"
   resolved "https://registry.yarnpkg.com/angular-touch/-/angular-touch-1.5.11.tgz#61f469c47ecf8979fb410c8d3a615d324d2b15ef"
@@ -79,10 +71,6 @@ angular-ui-bootstrap@^2.5.6:
 angular@1.5.11:
   version "1.5.11"
   resolved "https://registry.yarnpkg.com/angular/-/angular-1.5.11.tgz#8c5ba7386f15965c9acf3429f6881553aada30d6"
-
-angular@^1.4.8:
-  version "1.6.6"
-  resolved "https://registry.yarnpkg.com/angular/-/angular-1.6.6.tgz#fd5a3cfb437ce382d854ee01120797978527cb64"
 
 ansi-regex@^2.0.0:
   version "2.1.1"
@@ -1426,10 +1414,6 @@ currently-unhandled@^0.4.1:
   dependencies:
     array-find-index "^1.0.1"
 
-d3@^3.5.16:
-  version "3.5.17"
-  resolved "https://registry.yarnpkg.com/d3/-/d3-3.5.17.tgz#bc46748004378b21a360c9fc7cf5231790762fb8"
-
 d@1:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/d/-/d-1.0.0.tgz#754bb5bfe55451da69a58b94d45f4c5b0462d58f"
@@ -2680,10 +2664,6 @@ mixin-object@^2.0.1:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
-
-moment@^2.13.0:
-  version "2.19.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.19.1.tgz#56da1a2d1cbf01d38b7e1afc31c10bcfa1929167"
 
 ms@2.0.0:
   version "2.0.0"
