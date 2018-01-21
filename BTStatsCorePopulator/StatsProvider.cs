@@ -86,6 +86,7 @@ namespace BTStatsCorePopulator
                     {
                         reader.ReadLines();
                     }
+                    Console.WriteLine($"Done processing {file}");
                 }
             });
         }

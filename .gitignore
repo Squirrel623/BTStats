@@ -1,6 +1,8 @@
 .git
 .vs
-.vscode
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
 wwwroot
 bin
 obj
