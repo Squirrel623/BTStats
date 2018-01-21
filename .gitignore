@@ -7,3 +7,5 @@ obj
 *.user
 node_modules
 *.txt
+ReleaseDocker/*
+!ReleaseDocker/dockerfile

@@ -1,7 +1,7 @@
 # Clean
 Remove-Item .\BTStatsCore\wwwroot\* -Recurse
 Remove-Item .\BTStatsCore\bin\Release\PublishOutput\* -Recurse
-Remove-Item ..\BTStatsDocker\app -Recurse
+Remove-Item .\ReleaseDocker\app -Recurse
 
 # First, build assets
 Set-Location -Path .\BTStatsCore\wwwsrc
@@ -14,7 +14,7 @@ dotnet restore
 dotnet publish -c Release -o .\bin\Release\PublishOutput
 
 # Copy files to stats docker repo
-Copy-Item -Path .\bin\Release\PublishOutput -Destination ..\..\BTStatsDocker\app -Recurse -Container
+Copy-Item -Path .\bin\Release\PublishOutput -Destination ..\ReleaseDocker\app -Recurse -Container
 
-Set-Location ..\..\BTStatsDocker
+Set-Location ..\ReleaseDocker
 Remove-Item .\app\wwwsrc -Recurse
