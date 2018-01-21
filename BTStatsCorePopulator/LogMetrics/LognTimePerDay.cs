@@ -77,12 +77,9 @@ namespace BTStatsCorePopulator
             var localFirst = first.LocalDateTime;
             var localLast = last.LocalDateTime;
 
-            //ZonedDateTime endOfFirst = first.Zone.AtStrictly(new LocalDateTime(first.Year, first.Month, first.Day, 23, 59, 59));
-            //ZonedDateTime beginningOfLast = last.Zone.AtStrictly(new LocalDateTime(last.Year, last.Month, last.Day, 0, 0, 0));
             LocalDateTime endOfFirst = new LocalDateTime(first.Year, first.Month, first.Day, 23, 59, 59);
             LocalDateTime beginningOfLast = new LocalDateTime(last.Year, last.Month, last.Day, 0, 0, 0);
 
-            //returnList.Add(new Tuple<LocalDate, Duration>(firstKey, endOfFirst.Minus(first)));
             returnList.Add(new Tuple<LocalDate, Duration>(firstKey, endOfFirst.Minus(localFirst).ToDuration()));
 
             var dateIterator = endOfFirst.PlusSeconds(1);
@@ -93,12 +90,6 @@ namespace BTStatsCorePopulator
             while(dateIterator < beginningOfLast)
             {
                 var date = new LocalDate(dateIterator.Year, dateIterator.Month, dateIterator.Day);
-
-                if (datesSeen.Contains(date))
-                {
-                    var i = 10;
-                }
-
                 datesSeen.Add(date);
 
                 returnList.Add(new Tuple<LocalDate, Duration>(date, Duration.FromDays(1)));
@@ -125,6 +116,8 @@ namespace BTStatsCorePopulator
             return duration;
         }
 
+        static readonly private Duration OneDay = Duration.FromDays(1);
+
         private void UserLeave(UserTimestampMessage message)
         {
             if (!loggedInUsers.Contains(message.Username))
@@ -143,31 +136,18 @@ namespace BTStatsCorePopulator
             var logoutDate = new LocalDate(logoutDateTime.Year, logoutDateTime.Month, logoutDateTime.Day);
 
             //Case 1: User logged in and out on the same day
-
             if (loginDate == logoutDate)
             {
                 var date = new LocalDate(logoutDateTime.Year, logoutDateTime.Month, logoutDateTime.Day);
 
                 var duration = AssignAndReturnDurationForDate(message.Username, date);
-
-                if (duration > Duration.FromDays(1))
-                {
-                    var i = 11;
-                }
-
                 var delta = logoutDateTime.Minus(loginDateTime);
-                if (delta.TotalTicks < 0)
-                {
-                    var g = 19;
-                }
-
                 var newDuration = duration.Plus(delta);
 
-                if (newDuration > Duration.FromDays(1))
+                if (newDuration > OneDay)
                 {
-                    var u = 39;
+                    newDuration = OneDay;
                 }
-
 
                 userDictionary[date] = newDuration;
                 return;
@@ -180,9 +160,9 @@ namespace BTStatsCorePopulator
                 var currentTimespan = AssignAndReturnDurationForDate(message.Username, dateTimespanTuple.Item1);
                 userDictionary[dateTimespanTuple.Item1] = currentTimespan.Plus(dateTimespanTuple.Item2);
 
-                if (userDictionary[dateTimespanTuple.Item1] > Duration.FromDays(1))
+                if (userDictionary[dateTimespanTuple.Item1] > OneDay)
                 {
-                    var g = 10;
+                    userDictionary[dateTimespanTuple.Item1] = OneDay;
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using NodaTime;
 using NodaTime.TimeZones;
+using NodaTime.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -191,7 +192,7 @@ namespace BTStatsCorePopulator
 
         #region IHostedService
 
-        private string GetFilePath(DateTime date)
+        private string GetFilePath(LocalDate date)
         {
             string year, month, day;
             year = date.Year.ToString("D4");
@@ -201,7 +202,7 @@ namespace BTStatsCorePopulator
             return Path.Combine(LogDirectory, $"#berrytube-{year}-{month}-{day}.log");
         }
 
-        private string GetFileUrl(DateTime date)
+        private string GetFileUrl(LocalDate date)
         {
             string year, month, day;
             year = date.Year.ToString("D4");
@@ -211,7 +212,7 @@ namespace BTStatsCorePopulator
             return $"https://logs.multihoofdrinking.com/raw/%23berrytube-{year}-{month}-{day}.log";
         }
 
-        private async Task<string> DownloadFile(DateTime date, CancellationToken stoppingToken)
+        private async Task<string> DownloadFile(LocalDate date, CancellationToken stoppingToken)
         {
             string downloadPath = GetFilePath(date);
 
@@ -232,25 +233,30 @@ namespace BTStatsCorePopulator
             }
         }
 
-        private bool FileExists(DateTime date)
+        private bool FileExists(LocalDate date)
         {
             return File.Exists(GetFilePath(date));
         }
 
-        private static readonly DateTime BeginDate = new DateTime(2014, 1, 10);
-        private DateTime LatestDate = BeginDate;
+        private static readonly LocalDate BeginDate = new LocalDate(2014, 1, 10);
+        private LocalDate LatestDate = BeginDate;
 
-        private IEnumerable<DateTime> GetDatesFromLatestToCurrentDate(DateTime currentDate)
+        private IEnumerable<LocalDate> GetDatesFromLatestToCurrentDate(LocalDate currentDate)
         {
-            return Enumerable.Range(0, currentDate.Subtract(LatestDate).Days)
-                             .Select(offset => LatestDate.AddDays(offset+1));
+            return Enumerable.Range(0, Period.Between(LatestDate, currentDate, PeriodUnits.Days).Days)
+                             .Select(offset => LatestDate.PlusDays(offset + 1));
         }
 
         private async Task<IEnumerable<string>> CheckForNewFiles(CancellationToken stoppingToken)
         {
             var retList = new List<string>();
 
-            var dates = GetDatesFromLatestToCurrentDate(DateTime.Now).ToList();
+            //The log server will return partial logs, we only want to get full logs which are one day behind
+            //The server offset changes between +1 and +2 offset, so we just go with +3
+            var btLogYesterdayDateTime = new OffsetDateTime(DateTime.Now.ToLocalDateTime(), Offset.FromHours(3)).Minus(Duration.FromDays(1));
+            var localDate = new LocalDate(btLogYesterdayDateTime.Year, btLogYesterdayDateTime.Month, btLogYesterdayDateTime.Day);
+
+            var dates = GetDatesFromLatestToCurrentDate(localDate).ToList();
 
             foreach (var date in dates)
             {

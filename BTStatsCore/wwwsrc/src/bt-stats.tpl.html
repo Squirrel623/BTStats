@@ -19,14 +19,13 @@
     <label class="btn btn-primary" ng-model="$ctrl.offset" uib-btn-radio="2">Athens</label>
     <label class="btn btn-primary" ng-model="$ctrl.offset" uib-btn-radio="8">UTC+8</label>
     <label class="btn btn-primary" ng-model="$ctrl.offset" uib-btn-radio="9">UTC+9</label>
-    <!--<label class="btn btn-primary" ng-model="$ctrl.offset" uib-btn-radio="10">UTC+10</label>-->
   </div>
 </div>
 
 <div class="username">
   <input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
     placeholder="Username" ng-model="$ctrl.typeaheadValue" type="text" typeahead-on-select="$ctrl.commitUsername($model)"
-    uib-typeahead="username for username in $ctrl.usernames | filter:$viewValue | orderBy:$viewValue.length | limitTo:5">
+    uib-typeahead="username for username in $ctrl.usernames | filter:$viewValue | orderBy : $viewValue.length : false : $ctrl.sortUsernames | limitTo:5">
   </input>
 </div>
 <div class="stats">

@@ -12,6 +12,13 @@ function StatsCtrl(userDataStoreService, $http, $scope){
     return $ctrl.usernames = result.data
   });
 
+  $ctrl.sortUsernames = function(u1, u2) {
+    if (u1.type !== 'string' || u2.type !== 'string') {
+      return (v1.index < v2.index) ? -1 : 1;
+    }
+    return u1.value.length < u2.value.length ? -1 : 1;
+  }
+
   $ctrl.$onInit = function() {
     $ctrl.typeaheadValue = $ctrl.username = '';
     $ctrl.loginCount = $ctrl.loginTimeTotal = $ctrl.messagesTotal = 0;
