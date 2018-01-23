@@ -1,6 +1,0 @@
-docker run -p 3000:80 -v //c/Users/Brady/Documents/BTLogs2:/logs --hostname=server  sample
-
-docker build -t sample .
-
-https://www.stevejgordon.co.uk/docker-for-dotnet-developers-part-2
-https://andrewlock.net/exploring-the-net-core-docker-files-dotnet-vs-aspnetcore-vs-aspnetcore-build/

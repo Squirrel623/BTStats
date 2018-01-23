@@ -23,7 +23,7 @@
 </div>
 
 <div class="username">
-  <input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+  <input id="username-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
     placeholder="Username" ng-model="$ctrl.typeaheadValue" type="text" typeahead-on-select="$ctrl.commitUsername($model)"
     uib-typeahead="username for username in $ctrl.usernames | filter:$viewValue | orderBy : $viewValue.length : false : $ctrl.sortUsernames | limitTo:5">
   </input>

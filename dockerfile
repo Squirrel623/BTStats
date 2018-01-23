@@ -22,6 +22,8 @@ WORKDIR /app/BTStatsCore
 
 VOLUME /logs
 ENV LogDir /logs
+VOLUME /serverLogs
+ENV ServerLogsDir /serverLogs
 EXPOSE 80
 
 ENTRYPOINT dotnet run --configuration Release

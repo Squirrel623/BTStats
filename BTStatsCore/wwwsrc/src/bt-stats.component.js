@@ -9,7 +9,8 @@ function StatsCtrl(userDataStoreService, $http, $scope){
 
   $ctrl.usernames = [];
   $http.get('/users').then(result => {
-    return $ctrl.usernames = result.data
+    $ctrl.usernames = result.data;
+    $('#username-input').focus();
   });
 
   $ctrl.sortUsernames = function(u1, u2) {
