@@ -74,10 +74,10 @@ module.exports = {
   performance: {
     hints: false
   },
-  devtool: '#eval-source-map'
+  devtool: 'source-map'
 }
 
-if (process.env.NODE_ENV === 'production') {
+/* if (process.env.NODE_ENV === 'production') {
   module.exports.devTool = '#source-map';
   module.exports.resolve.alias['$vue'] = 'vue/dist/vue.runtime.common.js';
   module.exports.plugins = (module.exports.plugins || []).concat([
@@ -96,4 +96,4 @@ if (process.env.NODE_ENV === 'production') {
       minimize: true
     })
   ]);
-}
+} */
