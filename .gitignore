@@ -6,6 +6,7 @@
 wwwroot
 bin
 obj
+dist
 *.user
 node_modules
 *.txt
