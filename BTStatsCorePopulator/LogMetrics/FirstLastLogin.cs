@@ -5,19 +5,22 @@ using NodaTime;
 
 namespace BTStatsCorePopulator
 {
-    public class FirstLogin : IMetric
+    public class FirstLastLogin : IMetric
     {
         public Dictionary<string, LocalDate> FirstLoginDict { get; }
+        public Dictionary<string, LocalDate> LastLoginDict { get; }
 
-        public FirstLogin()
+        public FirstLastLogin()
         {
             FirstLoginDict = new Dictionary<string, LocalDate>();
+            LastLoginDict = new Dictionary<string, LocalDate>();
 
             var firstLoginDateTime = Users.FirstLogin.LocalDateTime;
             var firstLoginDate = new LocalDate(firstLoginDateTime.Year, firstLoginDateTime.Month, firstLoginDateTime.Day);
             foreach(var user in Users.InitialLoggedInUsers)
             {
                 FirstLoginDict[user] = firstLoginDate;
+                LastLoginDict[user] = firstLoginDate;
             }
         }
 
@@ -29,9 +32,12 @@ namespace BTStatsCorePopulator
                 return;
             }
 
+            var date = new LocalDate(message.Timestamp.Year, message.Timestamp.Month, message.Timestamp.Day);
+            LastLoginDict[userMessage.Username] = date;
+
             if (!FirstLoginDict.ContainsKey(userMessage.Username))
             {
-                FirstLoginDict[userMessage.Username] = new LocalDate(message.Timestamp.Year, message.Timestamp.Month, message.Timestamp.Day);
+                FirstLoginDict[userMessage.Username] = date;
             }
         }
     }

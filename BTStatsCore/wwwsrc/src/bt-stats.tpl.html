@@ -24,18 +24,27 @@
 
 <div class="username">
   <input id="username-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-    placeholder="Username" ng-model="$ctrl.typeaheadValue" type="text" typeahead-on-select="$ctrl.commitUsername($model)"
+    placeholder="Username" ng-model="$ctrl.typeaheadValue" type="text" typeahead-on-select="$ctrl.commitUsername($event, $model)"
     uib-typeahead="username for username in $ctrl.usernames | filter:$viewValue | orderBy : $viewValue.length : false : $ctrl.sortUsernames | limitTo:5">
   </input>
 </div>
 <div class="stats">
-    <div class="stat-item panel panel-default">
-      <div class="panel-heading">
-        <h2 class="login-date-header">First Login Date</h2>
-        <span class="glyphicon glyphicon-info-sign" uib-popover="Logs start on 2014-01-09" popover-trigger="'mouseenter'"></span>
-      </div>
-      <div class="panel-body"><h4>{{$ctrl.firstLogin}}</h4></div>
+  <div class="stat-item panel panel-default">
+    <div class="panel-heading">
+      <h2 class="login-date-header">First Login Date</h2>
+      <span class="glyphicon glyphicon-info-sign" uib-popover="Logs start on 2014-01-09" popover-trigger="'mouseenter'"></span>
     </div>
+    <div class="panel-body"><h4>{{$ctrl.firstLogin}}</h4></div>
+  </div>
+  <div class="stat-item panel panel-default">
+    <div class="panel-heading">
+      <h2 class="login-date-header">Last Login Date</h2>
+      <span class="glyphicon glyphicon-info-sign" uib-popover="Data has up to 24 hour lag" popover-trigger="'mouseenter'"></span>
+    </div>
+    <div class="panel-body">
+      <h4>{{$ctrl.lastLogin}}</h4>
+    </div>
+  </div>
   <div class="stat-item panel panel-default">
     <div class="panel-heading"><h2># of Times Logged In</h2></div>
     <div class="panel-body"><h4>{{$ctrl.loginCount}} Logins</h4></div>
@@ -50,7 +59,7 @@
   </div>
   <div class="stat-item panel panel-default">
     <div class="panel-heading"><h2>Most Used Emotes</h2></div>
-    <div class="panel-body">
+    <div id="emote-table" class="panel-body">
       <table class="table">
         <tr>
           <th>#</th>

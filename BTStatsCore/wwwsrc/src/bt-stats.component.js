@@ -20,11 +20,37 @@ function StatsCtrl(userDataStoreService, $http, $scope){
     return u1.value.length < u2.value.length ? -1 : 1;
   }
 
+  function preventDefault(e) {
+    e = e || window.event;
+    if (e.preventDefault)
+      e.preventDefault();
+    e.returnValue = false;
+  }
+  // left: 37, up: 38, right: 39, down: 40,
+  // spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
+  var keys = {13: 1};
+  function preventDefaultForScrollKeys(e) {
+    if (keys[e.keyCode]) {
+      preventDefault(e);
+      return false;
+    }
+  }
+  document.onkeydown = preventDefaultForScrollKeys;
+
   $ctrl.$onInit = function() {
+    $ctrl.changingUsernames = false;
+    $(window).scroll((event) => {
+      if ($ctrl.changingUsernames) {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      }
+    });
+
     $ctrl.typeaheadValue = $ctrl.username = '';
     $ctrl.loginCount = $ctrl.loginTimeTotal = $ctrl.messagesTotal = 0;
     $ctrl.mostUsedEmotes = [];
     $ctrl.firstLogin = "";
+    $ctrl.lastLogin = "";
 
     $ctrl.monthYearGroups = chunk(flatMap(range(2014, 2018), year => map(range(1, 13), month => {
       return {
@@ -56,7 +82,6 @@ function StatsCtrl(userDataStoreService, $http, $scope){
     $ctrl.year = $ctrl.monthYearGroups[$ctrl.activeIndex][0].year;
     $ctrl.offset = -4;
   }
-
   
   $ctrl.$doCheck = function() {
     const year = $ctrl.monthYearGroups[$ctrl.activeIndex][0].year;
@@ -65,14 +90,23 @@ function StatsCtrl(userDataStoreService, $http, $scope){
     }
   }
 
-  $ctrl.commitUsername = function(username) {
+  $ctrl.commitUsername = function(event, username) {
     if (includes($ctrl.usernames, username)) {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+
       $ctrl.username = username;
       $ctrl.updateUsernameData();
     }
+
+    return false;
   }
 
   $ctrl.updateUsernameData = function() {
+    const emoteElement = $('#emote-table');
+    const currentEmoteTableHeight = emoteElement.height();
+    emoteElement.css('min-height', `${currentEmoteTableHeight}px`);
+
     var prom1 = userDataStoreService.getLoginCount($ctrl.username)
       .then(count => $ctrl.loginCount = count, () => $ctrl.loginCount = 0);
     var prom2 = userDataStoreService.getLoggedInTime($ctrl.username)
@@ -84,8 +118,12 @@ function StatsCtrl(userDataStoreService, $http, $scope){
       .then(emotes => $ctrl.mostUsedEmotes = map(emotes, (value, key) => { return {name: key, times: value} }), $ctrl.mostUsedEmotes = []);
     var prom5 = userDataStoreService.getFirstLogin($ctrl.username)
       .then(date => $ctrl.firstLogin = date, () => $ctrl.firstLogin = "");
+    var prom6 = userDataStoreService.getLastLogin($ctrl.username)
+      .then(date => $ctrl.lastLogin = date, () => $ctrl.lastLogin = "");
 
-    Promise.all([prom1, prom2, prom3, prom4, prom5]).catch().then(() => $scope.$applyAsync());
+    Promise.all([prom1, prom2, prom3, prom4, prom5, prom6]).catch()
+      .then(() => $scope.$apply())
+      .then(() => emoteElement.css('min-height', ''));
   }
 }
 

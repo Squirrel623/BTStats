@@ -7,7 +7,29 @@ String.prototype.lpad = function (padString, length) {
   return str;
 }
 
-function UserDataStore($http) {
+const http = {
+  get: function(endpoint) {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        url: endpoint,
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'json',
+        global: false,
+        complete: (response, status) => {
+          if (status !== 'success') {
+            reject();
+          }
+          resolve({
+            data: response.responseJSON,
+          });
+        },
+      })
+    });
+  }
+}
+
+function UserDataStore() {
   const usernames = {};
 
   function readyUsername(username) {
@@ -21,28 +43,39 @@ function UserDataStore($http) {
       return Promise.resolve(usernames[username][endpoint]);
     }
 
-    return $http.get(`/${endpoint}/${username}`).then(result => {
+    return http.get(`/${endpoint}/${username}`).then(result => {
       usernames[username][endpoint] = result.data;
       return result.data;
     });
   }
 
+  function getStaticData({username, endpoint}) {
+    readyUsername(username);
+
+    let promise = has(usernames[username], 'staticDataPromise') ?
+      usernames[username].staticDataPromise :
+      http.get(`/allStaticData/${username}`);
+
+    usernames[username].staticDataPromise = promise;
+    return promise.then(result => result.data[endpoint]);
+  }
+
   function getLoginCount(username) {
-    return getSimpleValue({
+    return getStaticData({
       username: username,
       endpoint: 'loginCount'
     });
   }
 
   function getLoggedInTime(username) {
-    return getSimpleValue({
+    return getStaticData({
       username: username,
       endpoint: 'loggedInTime'
     });
   }
 
   function getTotalMessages(username) {
-    return getSimpleValue({
+    return getStaticData({
       username: username,
       endpoint: 'messageCount'
     });
@@ -60,29 +93,30 @@ function UserDataStore($http) {
       return user.loginTimePerDay[offset].then(result => get(result, [year.toString().lpad('0', 2), month.toString().lpad('0', 2)], {}));
     }
 
-    user.loginTimePerDay[offset] = $http.get(`/loggedInTimePerDay/${offset}/${username}`).then(result => {
+    user.loginTimePerDay[offset] = http.get(`/loggedInTimePerDay/${offset}/${username}`).then(result => {
       return transform(result.data, (acc, tuple) => setWith(acc, tuple.date.split('-'), tuple.milliseconds, Object), {});
     });
     return user.loginTimePerDay[offset].then(result => get(result, [year.toString().lpad('0', 2) ,month.toString().lpad('0', 2)], {}));
   }
 
   function getMostUsedEmotes(username) {
-    readyUsername(username);
-
-    if (has(usernames[username], 'emotes')) {
-      return Promise.resolve(usernames[username].emotes);
-    }
-
-    return $http.get(`/emotes/${username}/5`).then(result => {
-      usernames[username].emotes = result.data;
-      return result.data;
-    });
+    return getStaticData({
+      username: username,
+      endpoint: 'emotes',
+    })
   }
 
   function getFirstLogin(username) {
-    return getSimpleValue({
+    return getStaticData({
       username: username,
       endpoint: 'firstLogin'
+    });
+  }
+
+  function getLastLogin(username) {
+    return getStaticData({
+      username: username,
+      endpoint: 'lastLogin'
     });
   }
 
@@ -93,10 +127,11 @@ function UserDataStore($http) {
     getTotalMessages,
     getMostUsedEmotes,
     getFirstLogin,
+    getLastLogin,
   }
 }
 
-UserDataStore.$inject = ['$http'];
+UserDataStore.$inject = [];
 
 export const name = 'userDataStoreService';
 export default UserDataStore;

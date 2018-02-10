@@ -26,7 +26,7 @@ namespace BTStatsCorePopulator
         private LoginTimeAccumulator loginTimeMetric;
         private TotalMessages messageCountMetric;
         private UserEmotes emoteCountMetric;
-        private FirstLogin firstLoginMetric;
+        private FirstLastLogin firstLastLoginMetric;
 
         private List<LoginTimePerDay> dailyLoginTimeMetrics;
         private List<IMetric> metrics;
@@ -45,7 +45,7 @@ namespace BTStatsCorePopulator
             loginTimeMetric = new LoginTimeAccumulator();
             messageCountMetric = new TotalMessages();
             emoteCountMetric = new UserEmotes();
-            firstLoginMetric = new FirstLogin();
+            firstLastLoginMetric = new FirstLastLogin();
 
             TzdbDateTimeZoneSource tzSource = TzdbDateTimeZoneSource.Default;
             dailyLoginTimeMetrics = new List<LoginTimePerDay>()
@@ -68,7 +68,7 @@ namespace BTStatsCorePopulator
                 loginTimeMetric,
                 messageCountMetric,
                 emoteCountMetric,
-                firstLoginMetric
+                firstLastLoginMetric
             };
             metrics.AddRange(dailyLoginTimeMetrics);
 
@@ -181,12 +181,23 @@ namespace BTStatsCorePopulator
         public async Task<LocalDate> GetFirstLogin(string username)
         {
             await InitializeTask;
-            if(!firstLoginMetric.FirstLoginDict.ContainsKey(username))
+            if(!firstLastLoginMetric.FirstLoginDict.ContainsKey(username))
             {
                 return LocalDate.MinIsoValue;
             }
 
-            return firstLoginMetric.FirstLoginDict[username];
+            return firstLastLoginMetric.FirstLoginDict[username];
+        }
+
+        public async Task<LocalDate> GetLastLogin(string username)
+        {
+          await InitializeTask;
+          if (!firstLastLoginMetric.LastLoginDict.ContainsKey(username))
+          {
+            return LocalDate.MinIsoValue;
+          }
+
+          return firstLastLoginMetric.LastLoginDict[username];
         }
 
         #endregion

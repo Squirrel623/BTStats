@@ -77,6 +77,18 @@ namespace BTStatsCore.Controllers
             return await statsProvider.GetUsernames();
         }
 
+        [HttpGet("/allStaticData/{user}")]
+        public async Task<IDictionary<string, dynamic>> GetAllStaticData(string user) {
+            return new Dictionary<string, dynamic> {
+              {"loginCount", await GetLoginCount(user)},
+              {"loggedInTime", await GetLoggedInTime(user)},
+              {"messageCount", await GetMessageCount(user)},
+              {"emotes", await GetUserEmotes(user, 5)},
+              {"firstLogin", await GetFirstLoginDate(user)},
+              {"lastLogin", await GetLastLoginDate(user)}
+            };
+        }
+
         // GET api/values/loginCount/user
         [HttpGet("/loginCount/{user}")]
         public async Task<int> GetLoginCount(string user)
@@ -140,11 +152,22 @@ namespace BTStatsCore.Controllers
                 .Select(kvp => new UserLoginTimePerDay(kvp.Key, kvp.Value));
         }
 
+        private string FormatDate(LocalDate date) {
+          return$"{date.Year}-{date.Month.ToString("D2")}-{date.Day.ToString("D2")}";
+        }
+
         [HttpGet("/firstLogin/{user}")]
         public async Task<string> GetFirstLoginDate(string user)
         {
-            var date = await statsProvider.GetFirstLogin(user);
-            return $"{date.Year}-{date.Month.ToString("D2")}-{date.Day.ToString("D2")}";
+          var date = await statsProvider.GetFirstLogin(user);
+          return FormatDate(date);
+        }
+
+        [HttpGet("/lastLogin/{user}")]
+        public async Task<string> GetLastLoginDate(string user)
+        {
+          var date = await statsProvider.GetLastLogin(user);
+          return FormatDate(date);
         }
     }
 }
