@@ -1,9 +1,0 @@
-<div class="month-container">
-  <div class="header">{{::monthToStringMap[month]}}</div>
-  <div
-    ng-repeat="rowCol in ::rowCols"
-    ng-class="::'gc-' + rowCol.r + '-' + rowCol.c"
-    uib-popover="{{getHourValue(rowCol.r, rowCol.c)}} Hours" popover-trigger="'mouseenter'" 
-    >
-  </div>
-</div>

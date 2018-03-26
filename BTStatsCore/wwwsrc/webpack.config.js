@@ -1,4 +1,5 @@
 var path = require('path');
+var utils = require('./build/utils');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
@@ -17,57 +18,68 @@ const extractCss = new ExtractTextPlugin({
 module.exports = {
   entry: {
     site: [
-      './src/index.js',
+      './src/index.ts',
     ],
   },
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, '../wwwroot/'),
   },
-  plugins: [htmlPlugin, extractSass, extractCss],
+  plugins: [htmlPlugin,],// extractSass, extractCss],
   module: {
     rules: [
       {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['env']
-          }
+        test: /\.vue$/,
+        loader: 'vue-loader',
+        options: {
+          loaders: utils.cssLoaders({
+            sourceMap: false,
+            extract: false
+          })
         }
       },
       {
-        test: /\.html$/,
-        loader: 'html-loader',
+        test: /\.ts$/,
+        exclude: /node_modules/,
+        use: [
+          { loader: 'babel-loader', options: { presets: ['env'] } },
+          { loader: 'ts-loader', options: { appendTsSuffixTo: [/\.vue$/] } }
+        ]
       },
       {
         test: /\.css$/,
-        use: extractCss.extract({
-          fallback: 'style-loader',
-          use: [{
-            loader: 'css-loader',
-            options: {sourceMap: true}
-          }]
-        })
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
       },
       {
-        test: /\.scss$/,
-        use: extractSass.extract({
-          fallback: 'style-loader',
-          use: [{
-            loader: 'css-loader',
-            options: {sourceMap: true}
-          }, {
-            loader: 'sass-loader',
-            options: {sourceMap: true}
-          }]
-        })
+        test: /\.(ttf|eot|woff|woff2)$/,
+        loader: "file-loader",
+        options: {
+          name: "fonts/[name].[ext]",
+        },
+      },
+      {
+        test: /\.(png|jp(e*)g|svg)$/,
+        use: [{
+          loader: 'url-loader',
+          options: {
+            limit: 8000, // Convert images < 8kb to base64 strings
+            name: 'images/[hash]-[name].[ext]'
+          }
+        }]
       }
     ],
   },
   resolve: {
-    extensions: ['.js', '.html', '.scss', '.css']
+    extensions: ['.ts', '.vue', '.js'],
+    alias: {
+      'vue$': 'vue/dist/vue.esm.js'
+    }
   },
-  devtool: 'source-map'
+  devtool: 'source-map',
+  devServer: {
+    contentBase: path.resolve(__dirname, '../wwwroot')
+  }
 }
