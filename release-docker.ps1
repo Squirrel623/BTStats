@@ -6,6 +6,7 @@ Remove-Item .\ReleaseDocker\app -Recurse
 # First, build assets
 Set-Location -Path .\BTStatsCore\wwwsrc
 $env:BABEL_ENV = "production"
+$env:NODE_ENV = "production"
 yarn release
 
 # Next, publish dotnet

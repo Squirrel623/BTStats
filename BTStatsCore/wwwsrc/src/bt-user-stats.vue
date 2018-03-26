@@ -1,6 +1,6 @@
 <template>
 <div class="bt-user-stats-container">
-  <div class="title"><h1 class="center-flex">BT Log Stats</h1></div>
+  <div class="title"><h1 class="center-flex">BT Log User Stats</h1></div>
 
   <div class="calendar">
     <heatmap-carousel :username="username"></heatmap-carousel>
@@ -188,6 +188,10 @@ export default Vue.extend({
   .login-date-header {
     display: inline-block;
     padding-right: 10px;
+  }
+
+  .fa {
+    vertical-align: text-top;
   }
 </style>
 

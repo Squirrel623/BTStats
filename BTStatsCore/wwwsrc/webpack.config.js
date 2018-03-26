@@ -1,18 +1,10 @@
 var path = require('path');
 var utils = require('./build/utils');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 const htmlPlugin = new HtmlWebpackPlugin({
   title: 'BT Stats',
   template: './src/index.html',
-})
-
-const extractSass = new ExtractTextPlugin({
-  filename: '[name]-scss.css',
-})
-const extractCss = new ExtractTextPlugin({
-  filename: '[name].css',
 })
 
 module.exports = {
@@ -25,7 +17,7 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, '../wwwroot/'),
   },
-  plugins: [htmlPlugin,],// extractSass, extractCss],
+  plugins: [htmlPlugin],
   module: {
     rules: [
       {

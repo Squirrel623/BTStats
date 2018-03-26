@@ -16,8 +16,8 @@ import vBPopover from 'bootstrap-vue/es/directives/popover/popover';
 import {range, forEach, isString, isPlainObject, isFinite} from 'lodash-es';
 import * as $ from 'jquery';
 
-import calendar from '../calendar';
-import {intToString as monthIntToString} from '../my-heatmap/month/month-constant';
+import calendar from '../constants/calendar';
+import {intToString as monthIntToString} from '../constants/month';
 import UserDataStore from '../user-data-store';
 
 Vue.directive('b-popover', vBPopover);
