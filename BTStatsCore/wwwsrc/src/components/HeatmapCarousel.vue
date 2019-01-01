@@ -33,32 +33,27 @@ import bButtonGroup from 'bootstrap-vue/es/components/button-group/button-group'
 
 import btHeatmapMonth from './HeatmapMonth.vue';
 
-const monthYearGroups = chunk(flatMap(range(2014, 2018), year => map(range(1, 13), month => {
+const now = new Date();
+const currentYear = now.getFullYear();
+const shouldFillLastHalfOfLastYear = now.getMonth() > 5;
+const monthYearGroups = [];
+
+function getGroupForMonths(year, start, end) {
+  return map(range(start, end), month => {
     return {
       year: year,
       month: month,
     }
-  })),6);
-  
-monthYearGroups.push([{
-  year: 2018,
-  month: 1
-}, {
-  year: 2018,
-  month: 2
-}, {
-  year: 2018,
-  month: 3
-}, {
-  year: 2018,
-  month: 4
-}, {
-  year: 2018,
-  month: 5
-}, {
-  year: 2018,
-  month: 6
-}]);
+  });
+}
+
+for (let year = 2014; year <= currentYear; year++) {
+  monthYearGroups.push(getGroupForMonths(year, 1, 7));
+
+  if (year < currentYear || shouldFillLastHalfOfLastYear) {
+    monthYearGroups.push(getGroupForMonths(year, 7, 13));
+  }
+}
 
 export default {
   props: {

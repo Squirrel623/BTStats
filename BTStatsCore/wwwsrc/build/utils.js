@@ -32,7 +32,7 @@ exports.cssLoaders = function (options) {
     if (process.env.NODE_ENV === 'production') {
       return ExtractTextPlugin.extract({
         use: loaders,
-        fallback: 'vue-style-loader'
+        //fallback: 'vue-style-loader'
       })
     } else {
       return ['vue-style-loader'].concat(loaders)

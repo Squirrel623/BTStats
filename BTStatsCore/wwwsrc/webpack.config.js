@@ -40,10 +40,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader'
-        ]
+        use: utils.cssLoaders().css
       },
       {
         test: /\.(ttf|eot|woff|woff2)$/,

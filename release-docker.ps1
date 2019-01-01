@@ -1,7 +1,13 @@
 # Clean
-Remove-Item .\BTStatsCore\wwwroot\* -Recurse
-Remove-Item .\BTStatsCore\bin\Release\PublishOutput\* -Recurse
-Remove-Item .\ReleaseDocker\app -Recurse
+if (Test-Path .\BTStatsCore\wwwroot) {
+  Remove-Item .\BTStatsCore\wwwroot\* -Recurse
+}
+if (Test-Path .\BTStatsCore\bin\Release\PublishOutput) {
+  Remove-Item .\BTStatsCore\bin\Release\PublishOutput\* -Recurse
+}
+if (Test-Path .\ReleaseDocker\app) {
+  Remove-Item .\ReleaseDocker\app -Recurse
+}
 
 # First, build assets
 Set-Location -Path .\BTStatsCore\wwwsrc

@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceRoot}/BTStatsCore/bin/Debug/netcoreapp2.0/BTStatsCore.dll",
+            "program": "${workspaceRoot}/BTStatsCore/bin/Debug/netcoreapp2.1/BTStatsCore.dll",
             "args": [],
             "cwd": "${workspaceRoot}/BTStatsCore",
             "stopAtEntry": false,
@@ -42,7 +42,7 @@
           "request": "launch",
           "preLaunchTask": "build",
           // If you have changed target frameworks, make sure to update the program path.
-          "program": "${workspaceRoot}/BTStatsCore/bin/Debug/netcoreapp2.0/BTStatsCore.dll",
+          "program": "${workspaceRoot}/BTStatsCore/bin/Debug/netcoreapp2.1/BTStatsCore.dll",
           "args": [],
           "cwd": "${workspaceFolder}/BTStatsCore",
           "stopAtEntry": false,
