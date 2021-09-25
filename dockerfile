@@ -1,12 +1,12 @@
-FROM microsoft/dotnet:2.1-sdk
+FROM mcr.microsoft.com/dotnet/sdk:3.1
 
 WORKDIR /app
 
 COPY . .
 
-RUN npm install -g yarn@1.3
-
 WORKDIR /app/BTStatsCore/wwwsrc
+
+FROM node:16
 
 RUN yarn install
 
@@ -24,6 +24,6 @@ VOLUME /logs
 ENV LogDir /logs
 VOLUME /serverLogs
 ENV ServerLogsDir /serverLogs
-EXPOSE 80
+ENV ServePort 80
 
 ENTRYPOINT dotnet run --configuration Release

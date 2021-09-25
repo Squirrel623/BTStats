@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -33,13 +34,21 @@ namespace BTStatsCorePopulator
         private StreamReader fileStreamReader;
         private LocalDate baseDate;
         private IEnumerable<IMetric> metrics;
+        private bool valid = false;
 
         public FileReader(string filePath, IEnumerable<IMetric> metrics)
         {
             fileStreamReader = new StreamReader(filePath);
             this.metrics = metrics;
 
-            string firstLine = fileStreamReader.ReadLine();
+            string? firstLine = fileStreamReader.ReadLine();
+            if (string.IsNullOrEmpty(firstLine))
+            {
+                this.valid = false;
+                return;
+            }
+
+
             if (!LogRegex.LogOpened.IsMatch(firstLine))
             {
                 throw new Exception("Unexpected first line");
@@ -63,13 +72,24 @@ namespace BTStatsCorePopulator
 
 
             baseDate = new LocalDate(year, month, day);
+            this.valid = true;
         }
 
         public void ReadLines()
         {
-            string line;
+            if (!this.valid)
+            {
+                return;
+            }
+
+            string? line;
             while ((line = fileStreamReader.ReadLine()) != null)
             {
+                if (string.IsNullOrEmpty(line))
+                {
+                    continue;
+                }
+
                 TimestampMessage message = TimestampMessage.Create(baseDate, line);
                 if (message == null)
                 {

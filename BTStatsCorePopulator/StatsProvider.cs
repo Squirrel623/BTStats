@@ -35,7 +35,7 @@ namespace BTStatsCorePopulator
         {
             if (string.IsNullOrEmpty(LogDirectory))
             {
-                LogDirectory = @"C:\Users\Brady\Documents\BTLogs2";
+                LogDirectory = @"C:\Users\squir\Documents\BTLogs";
             }
 
             logFiles = Directory.EnumerateFiles(LogDirectory) as IEnumerable<string>;

@@ -3,25 +3,46 @@
     "tasks": [
       {
         "label": "build",
-        "command": "dotnet build",
-        "type": "shell",
-        "options": {
-          "cwd": "${workspaceFolder}\\BTStatsCore"
-        },
+        "command": "dotnet",
+        "type": "process",
         "args": [
-          "BTStatsCore.csproj"
+            "build",
+            "${workspaceFolder}/BTStatsCore/BTStatsCore.csproj",
+            "/property:GenerateFullPaths=true",
+            "/consoleloggerparameters:NoSummary"
         ],
-        "group": {
-          "kind": "build",
-          "isDefault": true
-        },
         "problemMatcher": "$msCompile"
-      },
+    },
       {
         "label": "test",
         "command": "echo hi",
         "type": "shell",
         "args": []
-      }
+    },
+    {
+        "label": "publish",
+        "command": "dotnet",
+        "type": "process",
+        "args": [
+            "publish",
+            "${workspaceFolder}/BTStatsCore/BTStatsCore.csproj",
+            "/property:GenerateFullPaths=true",
+            "/consoleloggerparameters:NoSummary"
+        ],
+        "problemMatcher": "$msCompile"
+    },
+    {
+        "label": "watch",
+        "command": "dotnet",
+        "type": "process",
+        "args": [
+            "watch",
+            "run",
+            "${workspaceFolder}/BTStatsCore/BTStatsCore.csproj",
+            "/property:GenerateFullPaths=true",
+            "/consoleloggerparameters:NoSummary"
+        ],
+        "problemMatcher": "$msCompile"
+    }
     ]
   }

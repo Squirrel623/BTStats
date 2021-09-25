@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace BTStatsCore
     {
         public static int Main(string[] args)
         {
-            string logDir = Environment.GetEnvironmentVariable("ServerLogsDir");
+            string? logDir = Environment.GetEnvironmentVariable("ServerLogsDir");
             if (string.IsNullOrEmpty(logDir))
             {
                 logDir = ".";
@@ -50,12 +51,21 @@ namespace BTStatsCore
             
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            string? port = Environment.GetEnvironmentVariable("ServePort");
+            if (string.IsNullOrEmpty(port))
+            {
+                port = "8080";
+            }
+
+            return WebHost.CreateDefaultBuilder(args)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .UseSerilog()
-                .UseUrls("http://*:80")
+                .UseUrls($"http://*:{port}")
                 .Build();
+        }
+            
     }
 }
